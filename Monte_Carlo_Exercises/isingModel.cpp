@@ -28,12 +28,7 @@ const double epsilon{1.0};
 using Lattice =
     std::array<std::array<double, Const::latticeSize>, Const::latticeSize>;
 
-/*
- * 
-void equilibration(Lattice& lattice){
-
-
-}
+void equilibration(Lattice &lattice) {}
 int main(void) {
 
   std::random_device rd;
@@ -42,7 +37,7 @@ int main(void) {
   // Generates randum number for the xPos on the latice
   std::uniform_int_distribution<> rndXPos(0, Const::latticeSize);
   // Generataes random number for the yPos on the lattice
-  std::uniorm_int_distribution<> rndYPos(0, Const::latticeSize);
+  std::uniform_int_distribution<> rndYPos(0, Const::latticeSize);
   // Generates random number [0, 1) to compared with acceptance probability
   std::uniform_real_distribution<> rndNum(0, 1);
 

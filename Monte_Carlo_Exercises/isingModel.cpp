@@ -1,3 +1,9 @@
+/**
+ * @file isingModel.cpp
+ * @brief Calculates the average spin of a square lattice of size L x L
+ * at thermal equilibrium utilizing the Metropolis-Hastings algorithm.
+ */
+
 #include <array>
 #include <cmath>
 #include <iostream>
@@ -28,7 +34,13 @@ const double epsilon{1.0};
 using Lattice =
     std::array<std::array<double, Const::latticeSize>, Const::latticeSize>;
 
+/**
+ * @brief [TODO:description]
+ *
+ * @param lattice [TODO:parameter]
+ */
 void equilibration(Lattice &lattice) {}
+
 int main(void) {
 
   std::random_device rd;

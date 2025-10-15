@@ -17,7 +17,7 @@ const double boltzmann{1.380649e-23};
 const double temp{10};
 const double beta{1.0 / (boltzmann * temp)};
 const double epsilon{1.0};
-
+const double spin{0.5};
 } // namespace Const
 
 /* TODO
@@ -33,13 +33,28 @@ const double epsilon{1.0};
 // Template for 2D array to increase readability
 using Lattice =
     std::array<std::array<double, Const::latticeSize>, Const::latticeSize>;
+int periodicIndex(int index, int size) { return (index + size) % size; }
+void setInitialState(Lattice &lattice) {
+  for (int i = 0; i < Const::latticeSize; i++) {
+    for (int j = 0; j < Const::latticeSize; i++) {
+      lattice[i][j] = Const::spin;
+    }
+  }
+}
 
-/**
- * @brief [TODO:description]
- *
- * @param lattice [TODO:parameter]
- */
-void equilibration(Lattice &lattice) {}
+double deltaE(const Lattice &lattice, const int i, const int j) {
+  double neighborSum = lattice[periodicIndex(i - 1, Const::latticeSize)][j] +
+                       lattice[periodicIndex(i + 1, Const::latticeSize)][j] +
+                       lattice[i][periodicIndex(j - 1, Const::latticeSize)] +
+                       lattice[i][periodicIndex(j + 1, Const::latticeSize)];
+
+  double state{lattice[i][j]};
+  double result = 2 * state * (Const::epsilon * neighborSum + B);
+  return result;
+}
+
+bool acceptabilityCheck(double) { double result{0.0}; }
+void equilibration(Lattice &lattice) { for (int i = 0; i <) }
 
 int main(void) {
 
@@ -55,6 +70,7 @@ int main(void) {
 
   // The 2D square lattice of size latticeSize x latticeSize
   Lattice lattice;
+  setInitialState(lattice);
 
   return 0;
 }

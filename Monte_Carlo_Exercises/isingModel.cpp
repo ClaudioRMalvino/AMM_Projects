@@ -8,7 +8,6 @@
 #include <cmath>
 #include <iostream>
 #include <random>
-#include <vector>
 
 namespace Const {
 const int latticeSize{50};
@@ -30,10 +29,15 @@ const double spin{0.5};
  * function of B, epsilon, and T.
  */
 
-// Template for 2D array to increase readability
+// type alias for 2D array to increase readability
 using Lattice =
     std::array<std::array<double, Const::latticeSize>, Const::latticeSize>;
-int periodicIndex(int index, int size) { return (index + size) % size; }
+
+/**
+ * @brief Function sets the initial state of all lattice sites to spin up (1/2)
+ *
+ * @param lattice the square periodic lattice of our system
+ */
 void setInitialState(Lattice &lattice) {
   for (int i = 0; i < Const::latticeSize; i++) {
     for (int j = 0; j < Const::latticeSize; i++) {
@@ -42,6 +46,16 @@ void setInitialState(Lattice &lattice) {
   }
 }
 
+int periodicIndex(int index, int size) { return (index + size) % size; }
+
+/**
+ * @brief Function calculates the change in energy from s -> s'
+ *
+ * @param lattice [square periodic lattice of our system]
+ * @param i [the position along the x-axis]
+ * @param j [the position along the y-axis]
+ * @return [return the change in energy between s -> s']
+ */
 double deltaE(const Lattice &lattice, const int i, const int j) {
   double neighborSum = lattice[periodicIndex(i - 1, Const::latticeSize)][j] +
                        lattice[periodicIndex(i + 1, Const::latticeSize)][j] +
@@ -49,12 +63,12 @@ double deltaE(const Lattice &lattice, const int i, const int j) {
                        lattice[i][periodicIndex(j + 1, Const::latticeSize)];
 
   double state{lattice[i][j]};
-  double result = 2 * state * (Const::epsilon * neighborSum + B);
+  double result = 2 * state * (Const::epsilon * neighborSum + Const::magField);
   return result;
 }
 
 bool acceptabilityCheck(double) { double result{0.0}; }
-void equilibration(Lattice &lattice) { for (int i = 0; i <) }
+void equilibration(Lattice &lattice) {}
 
 int main(void) {
 

@@ -34,7 +34,7 @@ using Lattice =
     std::array<std::array<double, Const::latticeSize>, Const::latticeSize>;
 
 /**
- * @brief Function sets the initial state of all lattice sites to spin up (1/2)
+ * @brief Function sets the initial state of all lattice sites to spin up (+1/2)
  *
  * @param lattice the square periodic lattice of our system
  */
@@ -67,19 +67,22 @@ double deltaE(const Lattice &lattice, const int i, const int j) {
   return result;
 }
 
-bool acceptabilityCheck(double) { double result{0.0}; }
 void equilibration(Lattice &lattice) {}
+bool acceptabilityCheck() {
+  double result{0.0};
+  if (deltaE(i, j) > 0)
+}
 
 int main(void) {
 
   std::random_device rd;
   std::mt19937 gen(rd()); // seed
 
-  // Generates randum number for the xPos on the latice
+  // Generates random number for the xPos on the lattice
   std::uniform_int_distribution<> rndXPos(0, Const::latticeSize);
   // Generataes random number for the yPos on the lattice
   std::uniform_int_distribution<> rndYPos(0, Const::latticeSize);
-  // Generates random number [0, 1) to compared with acceptance probability
+  // Generates random number [0, 1) to compare with acceptance probability
   std::uniform_real_distribution<> rndNum(0, 1);
 
   // The 2D square lattice of size latticeSize x latticeSize

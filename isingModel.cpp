@@ -14,8 +14,6 @@ namespace Const {
 const int latticeSize{50};
 const double magField{0.0};
 const double boltzmann{1.0};
-const double temp{1.0};
-const double beta{1.0 / (boltzmann * temp)};
 const double epsilon{1.0};
 const double spin{1.0};
 } // namespace Const
@@ -27,7 +25,7 @@ using Lattice = std::vector<std::vector<double>>;
  * @brief Function sets the initial state of all lattice sites to spin up
  * (+1/2)
  *
- * @param lattice the square periodic lattice of our system
+ * @param lattice: the square periodic lattice of our system
  */
 void setInitialState(Lattice &lattice);
 
@@ -39,6 +37,7 @@ int periodicIndex(int index, int size);
  * @param lattice: square periodic lattice of our system
  * @param i: the position along the x-axis
  * @param j: the position along the y-axis
+ *
  * @return return the change in energy between s -> s'
  */
 double deltaE(const Lattice &lattice, const int &i, const int &j);
@@ -57,14 +56,18 @@ double deltaE(const Lattice &lattice, const int &i, const int &j);
  *
  * @param dE: the change in energy between s and s'
  * @param randomNumU: random uniform number [0,1]
+ * @param beta: the betaerature of the system
+ *
  * @return true or false, depending on acceptance
  */
-bool acceptabilityCheck(const double &dE, const double &randomNumU);
+bool acceptabilityCheck(const double &dE, const double &randomNumU,
+                        const double &beta);
 
 /**
  * @brief calculates the instantaneous sum of all our spins in the system
  *
  * @param lattice: square periodic lattice of our system
+ *
  * @return: sum of spins in the system
  */
 double calcInstTotalSpin(const Lattice &lattice);
@@ -78,37 +81,48 @@ double calcInstTotalSpin(const Lattice &lattice);
  *
  * @param lattice: square periodic lattice of our system
  * @param numSteps: number of steps to run the Metropolis-Hastings algorithm
+ * @param beta: inverse betaerature of our system
+ * @param gen: std::mt19937 random number generator
  * @param takeMeasurements: defaulted to false. If set to true, the function
  * will take measurements of the system.
+ * @param outputFile: a pointer to a std::ofstream to write our data into
+ *
  * @ return: default returns 0.0 (success), if takeMeasurements=true, returns
  * the thermodynamic average spin of the system.
  */
-double runMetropolis(Lattice &lattice, const int &numSteps, std::mt19937 &gen,
-                     const bool takeMeasurements = false,
+double runMetropolis(Lattice &lattice, const int &numSteps, const double &beta,
+                     std::mt19937 &gen, const bool takeMeasurements = false,
                      std::ofstream *outputFile = nullptr);
 
 int main(int argc, char *argv[]) {
 
-  if (argc != 3) {
+  if (argc != 4) {
     std::cerr << "Usage: " << argv[0]
-              << " <equilibirationSteps> <measurementSteps>" << 'n';
+              << " <equilibirationSteps> <measurementSteps> <temperature>"
+              << 'n';
     return 1;
   }
   try {
 
-    int numEquilibrationSteps = std::stoi(argv[1]);
-    int numMeasurementSteps = std::stoi(argv[2]);
+    const int numEquilibrationSteps = std::stoi(argv[1]);
+    const int numMeasurementSteps = std::stoi(argv[2]);
+    const double temp = std::stod(argv[3]);
+    const double beta = 1.0 / (Const::boltzmann * temp);
+
     std::random_device rd;
     std::mt19937 gen(rd());
+
     Lattice lattice(Const::latticeSize,
                     std::vector<double>(Const::latticeSize));
+
     std::ofstream dataFile("equilibration_data.txt");
 
     setInitialState(lattice);
-    double equilibrated =
-        runMetropolis(lattice, numEquilibrationSteps, gen, false, &dataFile);
+    double equilibrated = runMetropolis(lattice, numEquilibrationSteps, beta,
+                                        gen, false, &dataFile);
     if (equilibrated == 0.0) {
-      double result = runMetropolis(lattice, numMeasurementSteps, gen, true);
+      double result =
+          runMetropolis(lattice, numMeasurementSteps, beta, gen, true);
       std::cout << "<s> = " << result << std::endl;
     }
     dataFile.close();
@@ -143,13 +157,14 @@ double deltaE(const Lattice &lattice, const int &i, const int &j) {
   return result;
 }
 
-bool acceptabilityCheck(const double &dE, double &randomNumU) {
+bool acceptabilityCheck(const double &dE, double &randomNumU,
+                        const double &beta) {
   double acceptProb;
   if (dE < 0) {
     return true;
   } else {
     // Boltzmann distribution
-    acceptProb = std::exp(-Const::beta * dE);
+    acceptProb = std::exp(-beta * dE);
     if (randomNumU <= acceptProb) {
       return true;
     } else {
@@ -167,8 +182,9 @@ double calcInstTotalSpin(const Lattice &lattice) {
   return totalSpin;
 }
 
-double runMetropolis(Lattice &lattice, const int &numSteps, std::mt19937 &gen,
-                     const bool takeMeasurements, std::ofstream *outputFile) {
+double runMetropolis(Lattice &lattice, const int &numSteps, const double &beta,
+                     std::mt19937 &gen, const bool takeMeasurements,
+                     std::ofstream *outputFile) {
 
   std::uniform_int_distribution<> randIPos(0, Const::latticeSize - 1);
   std::uniform_int_distribution<> randJPos(0, Const::latticeSize - 1);
@@ -185,7 +201,7 @@ double runMetropolis(Lattice &lattice, const int &numSteps, std::mt19937 &gen,
     int jPos{randJPos(gen)};
     double randNumU{randNum(gen)};
     double dE{deltaE(lattice, iPos, jPos)};
-    bool acceptability{acceptabilityCheck(dE, randNumU)};
+    bool acceptability{acceptabilityCheck(dE, randNumU, beta)};
 
     if (acceptability == true) {
       lattice[iPos][jPos] *= -1;
